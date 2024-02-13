@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using dominio;
+using negocio;
 
 namespace winform_app
 {
@@ -20,11 +22,7 @@ namespace winform_app
 
         private void frmPokemons_Load(object sender, EventArgs e)
         {
-            PokemonNegocio negocio = new PokemonNegocio();
-            listaPokemon = negocio.listar();
-            dgvPokemons.DataSource = listaPokemon;
-            cargarImagen(listaPokemon[0].UrlImagen);
-
+            cargar();
         }
 
         private void dgvPokemons_SelectionChanged(object sender, EventArgs e)
@@ -32,6 +30,23 @@ namespace winform_app
             //Capturar el objeto que esta en la fila seleccionada.
             Pokemons seleccionado = (Pokemons)dgvPokemons.CurrentRow.DataBoundItem;
             cargarImagen(seleccionado.UrlImagen);
+        }
+
+        private void cargar()
+        {
+            PokemonNegocio negocio = new PokemonNegocio();
+            try
+            {
+                listaPokemon = negocio.listar();
+                dgvPokemons.DataSource = listaPokemon;
+                dgvPokemons.Columns["UrlImagen"].Visible = false;
+
+                cargarImagen(listaPokemon[0].UrlImagen);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         private void cargarImagen(string imagen)
@@ -45,6 +60,13 @@ namespace winform_app
             {
                 pbxPokemon.Load("https://uning.es/wp-content/uploads/2016/08/ef3-placeholder-image.jpg");
             }
+        }
+
+        private void btnAgregar_Click(object sender, EventArgs e)
+        {
+            frmAltaPokemon alta = new frmAltaPokemon();
+            alta.ShowDialog();
+            cargar();
         }
     } 
 }
