@@ -14,29 +14,51 @@ namespace winform_app
 {
     public partial class frmAltaPokemon : Form
     {
+        private Pokemons pokemon = null;
+        //Por aqui pasa cuando se da click en el boton aceptar
         public frmAltaPokemon()
         {
             InitializeComponent();
         }
 
+        //Por aqui pasa cuando se da click en el boton modificar
+        public frmAltaPokemon(Pokemons pokemon)
+        {
+            InitializeComponent();
+            this.pokemon = pokemon; //Cargamos el atributo privado de esta clase con un pokemon
+            Text = "Modificar Pokemon";
+        }
+
         private void btnAceptar_Click(object sender, EventArgs e)
         {
-            Pokemons poke = new Pokemons();
             PokemonNegocio negocio = new PokemonNegocio();
             try
             {
                 //Cargar los datos del nuevo pokemon
-                poke.Numero = int.Parse(txtNumero.Text);
-                poke.Nombre = txtNombre.Text;
-                poke.Descripcion = txtDescripcion.Text;
+                //Utilizaremos el atributo privado
+                if(pokemon == null)
+                    pokemon = new Pokemons(); //Si estas agregando un pokemon tienes que instanciar el atributo que esta en null
+                pokemon.Numero = int.Parse(txtNumero.Text);
+                pokemon.Nombre = txtNombre.Text;
+                pokemon.Descripcion = txtDescripcion.Text;
                 //Mapeando la UrlImagen
-                poke.UrlImagen = txtUrlImagen.Text;
-                poke.Tipo = (Elemento)cbxTipo.SelectedItem;
-                poke.Debilidad = (Elemento)cbxTipo.SelectedItem;
+                pokemon.UrlImagen = txtUrlImagen.Text;
+                pokemon.Tipo = (Elemento)cbxTipo.SelectedItem;
+                pokemon.Debilidad = (Elemento)cbxDebilidad.SelectedItem;
 
-                //Enviar los datos cargado a la base de datos
-                negocio.agregar(poke);
-                MessageBox.Show("Agregado exitosamente");
+                //Si nosotros queremos modificar un objeto significa que ya tiene un Id existente
+                if(pokemon.Id != 0)
+                {
+                    negocio.modificar(pokemon);
+                    MessageBox.Show("Modificado exitosamente");
+                    
+                }
+                else
+                {
+                    negocio.agregar(pokemon);
+                    MessageBox.Show("Agregado exitosamente");
+                }
+
                 Close(); //Aqui cierro ventana
             }
             catch (Exception ex)
@@ -58,11 +80,28 @@ namespace winform_app
             {
                 //Cargamos los comboboxes con el metodo listar
                 cbxTipo.DataSource = negocio.listar();
-                cbxDebilidad.DataSource = negocio.listar(); 
+                cbxTipo.ValueMember = "Id"; //le asignamos el Id de la propiedad elemento
+                cbxTipo.DisplayMember = "Descripcion"; //le asignamos el Descripcion de la propiedad elemento
+
+                cbxDebilidad.DataSource = negocio.listar();
+                cbxDebilidad.ValueMember = "Id"; //le asignamos el Id de la propiedad elemento
+                cbxDebilidad.DisplayMember = "Descripcion"; //le asignamos el Descripcion de la propiedad elemento
+
+                if (pokemon != null)
+                {
+                    txtNumero.Text = pokemon.Numero.ToString();
+                    txtNombre.Text = pokemon.Nombre;
+                    txtDescripcion.Text = pokemon.Descripcion;
+                    txtUrlImagen.Text = pokemon.UrlImagen;
+                    cargarImagen(txtUrlImagen.Text);
+
+                    //Preseleccionar los valores de los combo boxes con el objeto pokemon
+                    cbxTipo.SelectedValue = pokemon.Tipo.Id;
+                    cbxDebilidad.SelectedValue = pokemon.Debilidad.Id;
+                } 
             }
             catch (Exception ex)
             {
-
                 MessageBox.Show(ex.ToString());
             }
 

@@ -19,33 +19,35 @@ namespace negocio
 
             try
             {
-                datos.setearConsulta("SELECT Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad FROM POKEMONS P, ELEMENTOS E, ELEMENTOS D WHERE E.Id = P.IdTipo AND D.ID = P.IdDebilidad ");
+                datos.setearConsulta("SELECT P.Id, Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad FROM POKEMONS P, ELEMENTOS E, ELEMENTOS D WHERE E.Id = P.IdTipo AND D.ID = P.IdDebilidad");
                 datos.ejecutarLectura();
 
                 while (datos.Lector.Read())
                 {
                     Pokemons aux = new Pokemons();
+                    aux.Id = (int)datos.Lector["Id"];
                     aux.Numero = (int)datos.Lector["Numero"];
                     aux.Nombre = (string)datos.Lector["Nombre"];
                     aux.Descripcion = (string)datos.Lector["Descripcion"];
 
                     //Validacion de la lectura null de la columna UrlImagen
                     if (!(datos.Lector["UrlImagen"] is DBNull))
-                    aux.UrlImagen = (string)datos.Lector["UrlImagen"];
+                        aux.UrlImagen = (string)datos.Lector["UrlImagen"];
 
                     //Como la propiedad Tipo es una clase primero hay que instanciar
                     aux.Tipo = new Elemento();
+                    aux.Tipo.Id = (int)datos.Lector["IdTipo"]; //Anadiendo el Id de tipo
                     aux.Tipo.Descripcion = (string)datos.Lector["Tipo"];
-                    aux.Debilidad = new Elemento();
+                    
+                    aux.Debilidad = new Elemento(); //Anadiendo el Id de la debilidad
+                    aux.Debilidad.Id = (int)datos.Lector["IdDebilidad"];
                     aux.Debilidad.Descripcion = (string)datos.Lector["Debilidad"];
-
                     lista.Add(aux);
                 }
                 return lista;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally 
@@ -73,6 +75,29 @@ namespace negocio
             { 
                 datos.cerrarConexion();
             }
+        }
+
+        public void modificar(Pokemons pokemon)
+        {
+            AccesoDatos datos= new AccesoDatos();
+            try
+            {
+                datos.setearConsulta("update POKEMONS set Numero = @numero, Nombre= @nombre, Descripcion= @desc, UrlImagen=@imagen, IdTipo = @tipo, IdDebilidad = @debilidad where id = @id");
+                datos.setearParametro("@numero", pokemon.Numero);
+                datos.setearParametro("@nombre", pokemon.Nombre);
+                datos.setearParametro("@desc", pokemon.Descripcion);
+                datos.setearParametro("@imagen", pokemon.UrlImagen);
+                datos.setearParametro("@tipo", pokemon.Tipo.Id);
+                datos.setearParametro("@debilidad", pokemon.Debilidad.Id);
+                datos.setearParametro("@id", pokemon.Id);
+
+                datos.ejecutarAccion();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally {datos.cerrarConexion();}
         }
     }
 }
