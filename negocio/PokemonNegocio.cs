@@ -19,7 +19,7 @@ namespace negocio
 
             try
             {
-                datos.setearConsulta("SELECT P.Id, Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad FROM POKEMONS P, ELEMENTOS E, ELEMENTOS D WHERE E.Id = P.IdTipo AND D.ID = P.IdDebilidad");
+                datos.setearConsulta("SELECT P.Id, Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad FROM POKEMONS P, ELEMENTOS E, ELEMENTOS D WHERE E.Id = P.IdTipo AND D.ID = P.IdDebilidad AND P.Activo = 1");
                 datos.ejecutarLectura();
 
                 while (datos.Lector.Read())
@@ -98,6 +98,39 @@ namespace negocio
                 throw ex;
             }
             finally {datos.cerrarConexion();}
+        }
+
+        public void eliminarFisico(int IdPokemon)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearConsulta("delete from POKEMONS where id = @id");
+                datos.setearParametro("@id", IdPokemon);
+                datos.ejecutarAccion();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }finally { datos.cerrarConexion();}
+        }
+
+        public void eliminarLogico(int idPokemon)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearConsulta("update POKEMONS set Activo = 0 where id= @id");
+                datos.setearParametro("@id", idPokemon);
+                datos.ejecutarAccion();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            finally { datos.cerrarConexion();}
         }
     }
 }
