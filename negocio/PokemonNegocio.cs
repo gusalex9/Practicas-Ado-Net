@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using dominio;
 using System.Diagnostics.Contracts;
 using System.Net;
+using System.Collections;
 
 namespace negocio
 {
@@ -131,6 +132,100 @@ namespace negocio
                 throw ex;
             }
             finally { datos.cerrarConexion();}
+        }
+
+        public List<Pokemons> filtrar(string campo, string criterio, string filtro)
+        {
+            List<Pokemons > list = new List<Pokemons >();
+            AccesoDatos data = new AccesoDatos();
+            try
+            {
+                //La consulta tiene que ser la misma que la del metodo listar con un espacion 
+                string consulta = "SELECT P.Id, Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad FROM POKEMONS P, ELEMENTOS E, ELEMENTOS D WHERE E.Id = P.IdTipo AND D.ID = P.IdDebilidad AND P.Activo = 1 AND ";
+
+                switch (campo)
+                {
+                    case "Numero":
+                        switch (criterio)
+                        {
+                            case "Mayor a":
+                                consulta += "Numero > " + filtro;
+                                break;
+                            case "Menor a":
+                                consulta += "Numero < " + filtro;
+                                break;
+                            default:
+                                consulta += "Numero = " + filtro;
+                                break;
+                        }
+                        break;
+
+                    case "Nombre":
+                        switch (criterio)
+                        {
+                            case "Comienza con":
+                                consulta += $"Nombre like '{filtro}%'";
+                                break;
+                            case "Termina con":
+                                consulta += $"Nombre like '%{filtro}'";
+                                break;
+                            default:
+                                consulta += $"Nombre like '%{filtro}%'";
+                                break;
+                        }
+                        break;
+
+                    default:
+                        switch (criterio)
+                        {
+                            case "Comienza con":
+                                consulta += $"P.Descripcion like '{filtro}%'";
+                                break;
+
+                            case "Termina con":
+                                consulta += $"P.Descripcion like '%{filtro}'";
+                                break;
+
+                            default:
+                                consulta += $"P.Descripcion like '%{filtro}%'";
+                                break;
+                        }
+                        break;
+                }
+
+                data.setearConsulta( consulta );
+                data.ejecutarLectura();
+
+                while (data.Lector.Read())
+                {
+                    Pokemons aux = new Pokemons();
+                    aux.Id = (int)data.Lector["Id"];
+                    aux.Numero = (int)data.Lector["Numero"];
+                    aux.Nombre = (string)data.Lector["Nombre"];
+                    aux.Descripcion = (string)data.Lector["Descripcion"];
+
+                    if (!(data.Lector["UrlImagen"] is DBNull))
+                        aux.UrlImagen = (string)data.Lector["UrlImagen"];
+
+                    aux.Tipo = new Elemento();
+                    aux.Tipo.Id = (int)data.Lector["IdTipo"]; 
+                    aux.Tipo.Descripcion = (string)data.Lector["Tipo"];
+
+                    aux.Debilidad = new Elemento(); 
+                    aux.Debilidad.Id = (int)data.Lector["IdDebilidad"];
+                    aux.Debilidad.Descripcion = (string)data.Lector["Debilidad"];
+                    list.Add(aux);
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }finally
+            {
+                data.cerrarConexion();
+            }
         }
     }
 }

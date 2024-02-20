@@ -23,13 +23,23 @@ namespace winform_app
         private void frmPokemons_Load(object sender, EventArgs e)
         {
             cargar();
+            //Cargar el combo box campo
+            cbxCampo.Items.Add("Numero");
+            cbxCampo.Items.Add("Nombre");
+            cbxCampo.Items.Add("Descripcion");
+
         }
 
         private void dgvPokemons_SelectionChanged(object sender, EventArgs e)
         {
-            //Capturar el objeto que esta en la fila seleccionada.
-            Pokemons seleccionado = (Pokemons)dgvPokemons.CurrentRow.DataBoundItem;
-            cargarImagen(seleccionado.UrlImagen);
+            //Solucion del error SelecteddIndexChanged
+            if(dgvPokemons.CurrentRow != null)
+            {
+                //Capturar el objeto que esta en la fila seleccionada.
+                Pokemons seleccionado = (Pokemons)dgvPokemons.CurrentRow.DataBoundItem;
+                cargarImagen(seleccionado.UrlImagen);
+            }
+            
         }
 
         private void cargar()
@@ -39,15 +49,39 @@ namespace winform_app
             {
                 listaPokemon = negocio.listar();
                 dgvPokemons.DataSource = listaPokemon;
-                dgvPokemons.Columns["Id"].Visible = false;
-                dgvPokemons.Columns["UrlImagen"].Visible = false;
-
+                ocultarColumanas();
                 cargarImagen(listaPokemon[0].UrlImagen);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        private void ocultarColumanas()
+        {
+            dgvPokemons.Columns["Id"].Visible = false;
+            dgvPokemons.Columns["UrlImagen"].Visible = false;
+        }
+
+        private void btnFiltro_Click(object sender, EventArgs e)
+        {
+            PokemonNegocio negocio = new PokemonNegocio();
+            try
+            {
+                //Capturar Valores
+                string campo = cbxCampo.SelectedItem.ToString();
+                string criterio = cbxCriterio.SelectedItem.ToString();
+                string filtro = txtFiltroAvando.Text;
+
+                dgvPokemons.DataSource = negocio.filtrar(campo, criterio, filtro);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
+            
         }
 
         private void cargarImagen(string imagen)
@@ -113,6 +147,46 @@ namespace winform_app
             {
 
                 MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void txtFiltro_TextChanged(object sender, EventArgs e)
+        {
+            List<Pokemons> listaFiltrada;
+            string filtro = txtFiltro.Text;
+
+            if (filtro.Length > 3)
+            {
+                listaFiltrada = listaPokemon.FindAll(x => x.Nombre.ToUpper().Contains(filtro.ToUpper()) || x.Tipo.Descripcion.ToUpper().Contains(filtro.ToUpper()));
+            }
+            else
+            {
+                listaFiltrada = listaPokemon;
+            }
+
+            dgvPokemons.DataSource = null;
+
+            dgvPokemons.DataSource = listaFiltrada;
+            ocultarColumanas();
+        }
+
+        private void cbxCampo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string opcion = cbxCampo.SelectedItem.ToString();
+
+            if(opcion == "Numero")
+            {
+                cbxCriterio.Items.Clear();
+                cbxCriterio.Items.Add("Mayor a");
+                cbxCriterio.Items.Add("Menor a");
+                cbxCriterio.Items.Add("Igual a");
+            }
+            else
+            {
+                cbxCriterio.Items.Clear();
+                cbxCriterio.Items.Add("Comienza con");
+                cbxCriterio.Items.Add("Termina con");
+                cbxCriterio.Items.Add("Contiene");
             }
         }
     } 
