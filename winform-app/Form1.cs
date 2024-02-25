@@ -63,12 +63,56 @@ namespace winform_app
             dgvPokemons.Columns["Id"].Visible = false;
             dgvPokemons.Columns["UrlImagen"].Visible = false;
         }
+        private bool validarFiltro()
+        {
+            if(cbxCampo.SelectedIndex < 0) //si es menos 1 es por que no se ha seleccionado nada
+            {
+                MessageBox.Show("Por favor, seleccione el campo para filtrar"); 
+                return true;
+            }
+
+            if(cbxCriterio.SelectedIndex < 0)
+            {
+                MessageBox.Show("Por favor, seleccione el criterio para filtrar");
+                return true;
+            }
+
+            if(cbxCampo.SelectedItem.ToString() == "Numero")
+            {
+                if (string.IsNullOrEmpty(txtFiltroAvando.Text))//Si esta vacio
+                {
+                    MessageBox.Show("Ingresa un numero");
+                    return true;
+                }
+                if (!(soloNumeros(txtFiltroAvando.Text))) //si no ingresa un numero
+                {
+                    MessageBox.Show("Ingresar solo numeros");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool soloNumeros(string cadena)
+        {
+            foreach(char caracter in cadena)
+            {
+                if (!(char.IsNumber(caracter)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         private void btnFiltro_Click(object sender, EventArgs e)
         {
             PokemonNegocio negocio = new PokemonNegocio();
             try
             {
+                if (validarFiltro())
+                    return; // Aqui cancelamos el evento si no se ha seleccionado nada
+
                 //Capturar Valores
                 string campo = cbxCampo.SelectedItem.ToString();
                 string criterio = cbxCriterio.SelectedItem.ToString();

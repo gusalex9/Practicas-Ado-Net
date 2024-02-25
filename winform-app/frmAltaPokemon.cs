@@ -5,17 +5,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Configuration;
 
 namespace winform_app
 {
     public partial class frmAltaPokemon : Form
     {
         private Pokemons pokemon = null;
-        //Por aqui pasa cuando se da click en el boton aceptar
+        private OpenFileDialog archivo;
         public frmAltaPokemon()
         {
             InitializeComponent();
@@ -57,6 +59,12 @@ namespace winform_app
                 {
                     negocio.agregar(pokemon);
                     MessageBox.Show("Agregado exitosamente");
+                }
+
+                if (archivo != null && !(txtUrlImagen.Text.ToUpper().Contains("HTTP")))
+                {
+                    //Guardo la imagen
+                    File.Copy(archivo.FileName, ConfigurationManager.AppSettings["poke-app"] + archivo.FileName);
                 }
 
                 Close(); //Aqui cierro ventana
@@ -122,6 +130,25 @@ namespace winform_app
             catch (Exception ex)
             {
                 pbxPokemon.Load("https://uning.es/wp-content/uploads/2016/08/ef3-placeholder-image.jpg");
+            }
+        }
+
+        private void btnAgregarImagen_Click(object sender, EventArgs e)
+        {
+            //Levcantar archicos de la computadora
+            archivo = new OpenFileDialog();
+
+            //Indicar que tipo de archivo quieres permitir
+            archivo.Filter = "jpg|*.jpg;|png|*.png";
+
+            //Levantar la pantalla para subir el archivo
+            archivo.ShowDialog();
+
+            //Validar para capturar el archivho seleccionado
+            if(archivo.ShowDialog() == DialogResult.OK)
+            {
+                txtUrlImagen.Text = archivo.FileName;
+                cargarImagen(txtUrlImagen.Text);
             }
         }
     }
